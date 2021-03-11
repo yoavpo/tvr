@@ -1,6 +1,5 @@
 import unittest
 from os import urandom
-
 from CBC_HMAC import AEAD_AES_128_CBC_HMAC_SHA_256
 
 
@@ -28,6 +27,9 @@ class TestVectors(unittest.TestCase):
 
         ciphertext = aead.authenticated_enc(data, aad, nonce)
         self.assertEqual(ciphertext, expected_ciphertext)
+
+        p = aead.authenticated_dec(ciphertext, aad, nonce)
+        self.assertEqual(data, p)
 
 
 if __name__ == '__main__':
