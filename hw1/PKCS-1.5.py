@@ -69,7 +69,7 @@ class RSA(object):
             print('init vars:', k, N)
         if (p is not None) and (q is not None):
             self.phin = (p - 1) * (q - 1)
-            self.d = ?
+            self.d = modinv(e, self.phin)
             self.test()
         else:
             self.d = None
@@ -121,8 +121,8 @@ class RSA_PKCS_1(RSA):
             raise Exception("first byte must be nonzero 0 if bt=0")
 
         if ps is None:
-            ps = ?
-        eb = ?  # Encryption Block
+            ps = self.pad(self.k-3-len(d))
+        eb = b'\x00' + bytes([self.bt]) + ps + b'\x00' + d  # Encryption Block
 
         x = int.from_bytes(eb, byteorder='big')  # Conversion to integer
 
@@ -176,7 +176,25 @@ class RSA_PKCS_1(RSA):
         :param eb: encryption block
         :return: parsed data
         """
-        ?
+        bt = eb[1]
+        
+        if bt==0 or bt==1:
+            return None
+        elif bt!=2:
+            raise Exception("incompatible block type")
+        
+        j = 0
+        for i in range(1, self.k):
+            if eb[i]==0:
+                j = i
+                break
+        if j == 0:
+            raise Exception("invalid padding")
+        if j-2 < 8:
+            raise Exception("invalid padding")
+        
+        return eb[j+1:]
+
 
 
 if __name__ == "__main__":
